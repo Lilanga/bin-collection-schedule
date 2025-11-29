@@ -93,3 +93,27 @@ self.addEventListener('activate', (event) => {
   );
   self.clients.claim();
 });
+
+// Handle notification click
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification click received.');
+
+  event.notification.close();
+
+  // Focus or open the app when notification is clicked
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then((clientList) => {
+      // If app is already open, focus it
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // If app is not open, open it
+      if (self.clients.openWindow) {
+        return self.clients.openWindow('/');
+      }
+    })
+  );
+});

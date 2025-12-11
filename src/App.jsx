@@ -44,10 +44,20 @@ export default function App() {
       if (savedSchedule) {
         try {
           const parsedSchedule = JSON.parse(savedSchedule);
-          // Convert date strings back to Date objects
-          parsedSchedule.green.dates = parsedSchedule.green.dates.map(d => new Date(d));
-          parsedSchedule.recycle.dates = parsedSchedule.recycle.dates.map(d => new Date(d));
-          parsedSchedule.rubbish.dates = parsedSchedule.rubbish.dates.map(d => new Date(d));
+
+          // Process each bin type to ensure dates are current
+          ['green', 'recycle', 'rubbish'].forEach(type => {
+            if (parsedSchedule[type]) {
+              const { dates, day, weeks } = parsedSchedule[type];
+              // If we have saved dates, use the first one as a reference to calculate the current schedule
+              // This works even if the saved dates are weeks/months old
+              if (dates && dates.length > 0) {
+                const startReference = new Date(dates[0]);
+                parsedSchedule[type].dates = getCollectionDates(startReference, day, weeks);
+              }
+            }
+          });
+
           setSchedule(parsedSchedule);
           setShowSearch(false);
 
